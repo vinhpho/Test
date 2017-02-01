@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Success Login </title>
+        <style>
+            table, th, td{
+            border: 1px solid black;
+            width: 500px;
+            }
+            h4{margin-right: 20px;}
+        </style>
+    </head>
+    <body>
+        <h1>Success! Welcome, {{loginuser.name}}!</h1>
+        <a href="/main/logout">logout</a>
+            {% for key,value in names.items %}
+        <div class="">
+
+                <h2>{{value}}<h2>
+      </div>
+            {% endfor %}
+
+      {% for key,value in users.items %}
+      <div style="border:1px solid black">
+          <h4><span>{{value}}</span></h4>
+          <form class="" action='/main/pokes' method="post">
+            {%csrf_token%}
+            <input type="hidden" name="userid" value="{{user.id}}">
+            <input type="submit" name="submit" value="Poke!">
+          </form>
+      </div>
+     {% endfor %}
+
+
+    </body>
+</html>

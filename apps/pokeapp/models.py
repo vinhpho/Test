@@ -46,11 +46,11 @@ class UserManager(models.Manager):
     def login(self,request):
         is_valid = True
         users= User.objects.filter(email=request.POST['email'])
+        user = users[0]
         if len(users) == 0:
             messages.error(request, "The user does not exist")
             is_valid = False
             return is_valid
-        user = users[0]
         dbpw=bcrypt.hashpw(request.POST['password'].encode('utf-8'), user.password.encode('utf-8'))
         if dbpw != user.password:
             messages.error(request, "Either email or password is incorrect")
@@ -66,40 +66,26 @@ class UserManager(models.Manager):
         return True
 
     def createpokes(self,request):
-        print"*"*50
-        print request.POST['userid']
-        lusers=User.objects.filter(id=request.session['logged_in'])
-        beingpokes=User.objects.filter(id=request.POST['userid'])
-        beingpoke=beingpokes[0]
-        luser=lusers[0]
-
-        request.session['pokeid'] = request.POST['userid']
-
-        print beingpoke.id
-        print beingpoke.name
-        # if 'pokeid' not in request.session:
-        #     if 'count' not in request.session:
-        #         request.session['count]' = 0
-        #     else:
-        #         request.session['count]' = request.session['count]' + 1
-        # print count
-        print"*"*50
-        new_poke = poke(
-            name = beingpoke.name
-            # pokecount = count
+        new_poke = Poke(
+            poked=User.objects.get(id=request.session['logged_in']),
+            receivedpoke=User.objects.get(id=request.POST['userid'])
         )
         new_poke.save()
-        loggeduser.pokes.add(new_poke)
 
-        new_history = History(
-            name = luser.name,
-            alias = luser.alias,
-            email = luser.email,
-            poke = beingpoke.name
-        )
-        new_history.save()
+        # users=User.objects.all().exclude(id=request.session['logged_in'])
+        #
+        # rows=Poke.objects.filter(receivedpoke=request.POST['userid'])
+        # row=rows[0]
+        # total=rows.all().count()
+        #
+        # new_history = History(
+        #     name = row.receivedpoke.name,
+        #     alias = row.receivedpoke.alias,
+        #     email = row.receivedpoke.email,
+        #     time = total
+        # )
+        # new_history.save()
         return True
-
 class User(models.Model):
     name = models.CharField(max_length=255)
     alias = models.CharField(max_length=255)
@@ -111,12 +97,14 @@ class User(models.Model):
 
     objects = UserManager()
 
-class poke(models.Model):
-    name = models.CharField(max_length=255)
-    pokes = models.ManyToManyField(User)
+class Poke(models.Model):
+    poked = models.ForeignKey(User, related_name = 'poked',null=True)
+    receivedpoke = models.ForeignKey(User, related_name = 'receivedpoke',null=True)
+    create_at = models.DateTimeField(auto_now_add=True)
+    update_at = models.DateTimeField(auto_now=True)
 
 class History(models.Model):
     name = models.CharField(max_length=255)
     alias = models.CharField(max_length=255)
     email = models.CharField(max_length=255)
-    pokes = models.CharField(max_length=255)
+    time = models.IntegerField(default=0)
